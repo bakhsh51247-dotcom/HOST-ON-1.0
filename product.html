@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jarvis Product</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;800&display=swap');
+
+        body { margin: 0; padding: 0; background: #000; font-family: 'Exo 2', sans-serif; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        @keyframes cardEntry {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .product-card { background: linear-gradient(135deg, rgba(16, 22, 41, 0.9) 0%, rgba(10, 15, 30, 0.95) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(0, 255, 255, 0.2); border-radius: 24px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 255, 0.1); transition: all 0.4s ease; width: 350px; overflow: hidden; animation: cardEntry 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.1) forwards; position: relative; z-index: 20; }
+        
+        .product-card:hover { transform: translateY(-8px); border-color: rgba(0, 255, 255, 0.5); box-shadow: 0 35px 70px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 255, 255, 0.25); }
+
+        .card-header {
+            padding: 30px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.15);
+            background: rgba(0, 255, 255, 0.03);
+            text-align: left;
+        }
+
+        h1 { font-size: 2.8em; font-weight: 800; text-transform: uppercase; color: #fff; text-shadow: 0 0 10px rgba(0, 255, 255, 0.5); margin: 0; letter-spacing: 3px; }
+        
+        .card-body {
+            padding: 30px;
+            text-align: left;
+        }
+
+        .description { font-size: 1.1em; line-height: 1.6; font-weight: 300; opacity: 0.8; margin: 0 0 25px 0; color: #a0b2cf; }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px dashed rgba(0, 255, 255, 0.2);
+        }
+
+        .price-text {
+            font-size: 1.1em;
+            font-weight: 400;
+            color: #80e0e0;
+        }
+
+        .price-value { font-size: 2em; font-weight: 600; color: #fff; text-shadow: 0 0 8px rgba(0, 255, 255, 0.4); }
+
+        button {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 18px;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        button::before {
+            content: "";
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 150%; height: 300%;
+            background: rgba(0, 255, 255, 0.1);
+            transition: all 0.6s ease;
+            z-index: -1;
+            transform: translate(-50%, -50%) rotate(45deg) scale(0);
+        }
+
+        button:hover { color: #050510; background: #00ffff; box-shadow: 0 0 30px rgba(0, 255, 255, 0.5); }
+        button:hover::before { transform: translate(-50%, -50%) rotate(45deg) scale(1); }
+        
+        button a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="product-card">
+        <div class="card-header">
+            <h1>Jarvis</h1>
+        </div>
+        <div class="card-body">
+            <p class="description">Activate personal augmented intelligence protocols. Seamless command integration, enhanced analytics, and contextual predictive assistance.</p>
+            <div class="price-row">
+                <span class="price-text">Jarvis</span>
+                <span class="price-value">$5</span>
+            </div>
+            <button id="next-btn"><a href="payment.html">Initialize Connection</a></button>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const dots = [];
+        const numDots = 100;
+        let mouseX = null;
+        let mouseY = null;
+
+        for (let i = 0; i < numDots; i++) {
+            dots.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                ox: 0,
+                oy: 0
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+
+            for (let i = 0; i < numDots; i++) {
+                const dot = dots[i];
+                
+                dot.x += dot.vx;
+                dot.y += dot.vy;
+
+                if (dot.x < 0 || dot.x > canvas.width) dot.vx *= -1;
+                if (dot.y < 0 || dot.y > canvas.height) dot.vy *= -1;
+
+                let drawX = dot.x;
+                let drawY = dot.y;
+
+                if (mouseX !== null) {
+                    const dx = dot.x - mouseX;
+                    const dy = dot.y - mouseY;
+                    const distMouse = Math.hypot(dx, dy);
+                    const maxDist = 150;
+
+                    if (distMouse < maxDist) {
+                        const force = (maxDist - distMouse) / maxDist;
+                        const offsetX = (dx / distMouse) * force * 50;
+                        const offsetY = (dy / distMouse) * force * 50;
+                        dot.ox += (offsetX - dot.ox) * 0.1;
+                        dot.oy += (offsetY - dot.oy) * 0.1;
+                    } else {
+                        dot.ox += (0 - dot.ox) * 0.1;
+                        dot.oy += (0 - dot.oy) * 0.1;
+                    }
+                } else {
+                    dot.ox += (0 - dot.ox) * 0.1;
+                    dot.oy += (0 - dot.oy) * 0.1;
+                }
+
+                drawX += dot.ox;
+                drawY += dot.oy;
+
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let j = i + 1; j < numDots; j++) {
+                    const otherDot = dots[j];
+                    const otherDrawX = otherDot.x + otherDot.ox;
+                    const otherDrawY = otherDot.y + otherDot.oy;
+                    const dist = Math.hypot(drawX - otherDrawX, drawY - otherDrawY);
+
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(drawX, drawY);
+                        ctx.lineTo(otherDrawX, otherDrawY);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouseX = null;
+            mouseY = null;
+        });
+
+        const nextBtn = document.getElementById('next-btn');
+
+        nextBtn.addEventListener('click', () => {
+            console.log('Next button clicked');
+        });
+    </script>
+</body>
+</html>
